@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AppState, ViewState, TransactionType } from './types';
 import { Sidebar } from './components/Sidebar';
