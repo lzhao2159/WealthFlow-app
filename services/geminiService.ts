@@ -19,9 +19,7 @@ export const getFinancialAdvice = async (
     .filter(t => t.type === TransactionType.EXPENSE)
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  const context = `
-    你是「WealthFlow Pro」的智能財務顧問。請根據以下使用者的財務數據回答問題。
-    
+  const dataContext = `
     【財務概況】
     - 總資產(現金+股票): TWD ${totalBalance + totalStockValue}
     - 現金餘額: TWD ${totalBalance}
@@ -34,15 +32,17 @@ export const getFinancialAdvice = async (
     
     【使用者問題】
     ${userQuery}
-    
-    請用繁體中文回答，語氣專業且鼓勵人心。針對投資建議請給予客觀分析，並提醒投資風險。
   `;
+
+  const systemInstruction = `你是「WealthFlow Pro」的智能財務顧問。請根據使用者的財務數據回答問題。
+請用繁體中文回答，語氣專業且鼓勵人心。針對投資建議請給予客觀分析，並提醒投資風險。`;
 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: context,
+      contents: dataContext,
       config: {
+        systemInstruction: systemInstruction,
         thinkingConfig: { thinkingBudget: 0 } // Fast response for chat
       }
     });
@@ -63,7 +63,24 @@ export const getMarketSentiment = async (stockSymbol: string): Promise<string> =
         tools: [{ googleSearch: {} }] // Use grounding for up-to-date info
       }
     });
-    return response.text || "暫無數據";
+    
+    let text = response.text || "暫無數據";
+
+    // Extract grounding URLs if available
+    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+    if (groundingChunks) {
+      const sources = groundingChunks
+        .map((chunk: any) => chunk.web?.uri)
+        .filter((uri: string) => uri)
+        .map((uri: string, index: number) => `[${index + 1}] ${uri}`)
+        .join('\n');
+      
+      if (sources) {
+        text += `\n\n參考來源:\n${sources}`;
+      }
+    }
+
+    return text;
   } catch (error) {
     return "無法取得市場分析";
   }

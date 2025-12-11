@@ -110,7 +110,7 @@ export const Stocks: React.FC<StocksProps> = ({ state, updateState }) => {
 
               <div className="mt-auto pt-4 border-t border-slate-50">
                 {sentiment?.id === stock.id ? (
-                  <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 animate-fade-in">
+                  <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 animate-fade-in whitespace-pre-wrap">
                     <p className="font-semibold text-slate-800 mb-1 flex items-center gap-2">
                        <Search size={14} /> 市場分析
                     </p>
