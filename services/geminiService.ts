@@ -39,11 +39,10 @@ export const getFinancialAdvice = async (
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: dataContext,
       config: {
         systemInstruction: systemInstruction,
-        thinkingConfig: { thinkingBudget: 0 } // Fast response for chat
       }
     });
 
@@ -57,7 +56,7 @@ export const getFinancialAdvice = async (
 export const getMarketSentiment = async (stockSymbol: string): Promise<string> => {
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: `請簡短分析股票代號 ${stockSymbol} 的近期市場情緒與關鍵新聞趨勢（假設你是專業分析師）。請用繁體中文回答，限制在 100 字以內。`,
       config: {
         tools: [{ googleSearch: {} }] // Use grounding for up-to-date info
@@ -71,7 +70,7 @@ export const getMarketSentiment = async (stockSymbol: string): Promise<string> =
     if (groundingChunks) {
       const sources = groundingChunks
         .map((chunk: any) => chunk.web?.uri)
-        .filter((uri: string) => uri)
+        .filter((uri: string) => typeof uri === 'string')
         .map((uri: string, index: number) => `[${index + 1}] ${uri}`)
         .join('\n');
       
@@ -82,6 +81,7 @@ export const getMarketSentiment = async (stockSymbol: string): Promise<string> =
 
     return text;
   } catch (error) {
+    console.error("Market Sentiment Error:", error);
     return "無法取得市場分析";
   }
 }

@@ -3,7 +3,6 @@ import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { AppState } from "../types";
 
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD0ra_pqsLrWHyF9NgJ4BWIupBkvRbhm8o",
   authDomain: "fir-1-a35fb.firebaseapp.com",
@@ -14,15 +13,10 @@ const firebaseConfig = {
   measurementId: "G-4P5KQRJYQS"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-/**
- * 初始化使用者資料
- * 如果是新用戶，在 Firestore 建立預設結構
- */
 export const initializeUserData = async (uid: string, email: string): Promise<AppState> => {
   try {
     const userDocRef = doc(db, "users", uid);
@@ -45,7 +39,6 @@ export const initializeUserData = async (uid: string, email: string): Promise<Ap
     }
   } catch (error) {
     console.error("Firebase 初始化資料失敗:", error);
-    // 返回基礎狀態以防程式崩潰
     return {
       user: { name: email.split('@')[0], email },
       accounts: [],
@@ -55,9 +48,6 @@ export const initializeUserData = async (uid: string, email: string): Promise<Ap
   }
 };
 
-/**
- * 將應用程式狀態同步回 Firebase
- */
 export const saveStateToFirebase = async (uid: string, state: Partial<AppState>) => {
   if (!uid) return;
   try {
