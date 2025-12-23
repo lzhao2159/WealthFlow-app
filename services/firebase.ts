@@ -1,4 +1,4 @@
-import * as firebase from "firebase/app";
+import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { AppState } from "../types";
@@ -15,11 +15,14 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-export const app = firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Helper functions
+/**
+ * 初始化使用者資料
+ * 如果是新用戶，在 Firestore 建立預設結構
+ */
 export const initializeUserData = async (uid: string, email: string): Promise<AppState> => {
   try {
     const userDocRef = doc(db, "users", uid);
@@ -41,7 +44,8 @@ export const initializeUserData = async (uid: string, email: string): Promise<Ap
       return newUserState;
     }
   } catch (error) {
-    console.error("Error initializing user data:", error);
+    console.error("Firebase 初始化資料失敗:", error);
+    // 返回基礎狀態以防程式崩潰
     return {
       user: { name: email.split('@')[0], email },
       accounts: [],
@@ -51,11 +55,15 @@ export const initializeUserData = async (uid: string, email: string): Promise<Ap
   }
 };
 
+/**
+ * 將應用程式狀態同步回 Firebase
+ */
 export const saveStateToFirebase = async (uid: string, state: Partial<AppState>) => {
+  if (!uid) return;
   try {
     const userDocRef = doc(db, "users", uid);
     await setDoc(userDocRef, state, { merge: true });
   } catch (error) {
-    console.error("Error saving state to Firebase:", error);
+    console.error("同步至 Firebase 失敗:", error);
   }
 };
